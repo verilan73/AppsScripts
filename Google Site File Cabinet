@@ -1,0 +1,29 @@
+/**This code is designed to list files in a google drive folder and output the results as a table.
+ * It can be embedded in a Google Site. Note that it will only show users files they have access to
+ */
+function doGet(e) {
+var gotResults = getDriveFiles();
+ var output = HtmlService.createTemplateFromFile('index.html');
+ output.results = gotResults;
+ //output.query = e.parameter.q;
+  Logger.log(output.results.length);
+  return output.evaluate();
+}
+function getDriveFiles() {
+  var files = [];
+
+  //Here is where you can add in the search criteria for the files you want to see
+  var fileIt = DriveApp.searchFiles('title contains "HBK"');
+  while ( fileIt.hasNext() ) {
+    var f = fileIt.next();
+    if(f.getOwner()== null){
+      owner = "Shared Drive"
+    } else {
+      owner = f.getOwner().getName();
+    }
+    files.push({id: f.getId(), name: f.getName(), URL: f.getUrl(), lastupdate: f.getLastUpdated(), MIME: f.getMimeType(), owner, parents: f.getParents()});
+    
+  }
+  return files;
+   
+}
