@@ -1,8 +1,16 @@
 /**This code is designed to list files in a google drive folder and output the results as a table.
  * It can be embedded in a Google Site. Note that it will only show users files they have access to
+<<<<<<< HEAD
+ * Note that I picked up this script from somewhere on line and have made minor changes to it, but I
+ * can't find the original source so I can credit it. If anyone identifies the source please tell me
+ * so I can give credit.
+ * */
+
+=======
  * Note that I picked up this script from somewhere on line and have made minor changes to it, but I
  * can't find the original source so I can credit it. If anyone identifies the source please tell me
  * so I can give credit. */
+>>>>>>> f628b5683e0620564d113f6011bc566fffc5b78a
 function doGet(e) {
 var gotResults = getDriveFiles();
  var output = HtmlService.createTemplateFromFile('index.html');
