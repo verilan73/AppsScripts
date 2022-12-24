@@ -1,0 +1,11 @@
+/**********************************************************************************************************
+ * Just a nice little script that moves the active cell to today's date, to facilitate data entry
+ * ********************************************************************************************************/
+function gotoToday(){
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const destinationSheet = ss.getActiveSheet();
+  var date = Utilities.formatDate(new Date(), 'GMT+2', 'dd MMM');
+  console.log (date);
+  var ranges = destinationSheet.createTextFinder(date).findAll().map(r => r.getA1Notation());
+  destinationSheet.getRangeList(ranges).activate();
+}
