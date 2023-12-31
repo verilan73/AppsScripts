@@ -1,59 +1,64 @@
-/************************************************************************************************************
- * This script updates the list of staff emails by appending them to the end of the list.
- * This ensures each row has a unique reference, ensuring manually added data remains tied to the staff member
- * **********************************************************************************************************/
-function updateStaffList(){
+/**
+ * Updates a list by appending new entries from a source sheet to a destination sheet.
+ * This can be used for various data types like emails, names, student IDs, etc.
+ *
+ * @param {string} sourceSheetId The ID of the source spreadsheet.
+ * @param {string} sourceSheetName The name of the source sheet.
+ * @param {string} sourceRange A1 notation for the range in the source sheet.
+ * @param {string} destSheetName The name of the destination sheet in the active spreadsheet.
+ * @param {string} destRange A1 notation for the range in the destination sheet.
+ */
+function updateList(sourceSheetId, sourceSheetName, sourceRange, destSheetName, destRange) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const destinationSheet = ss.getSheetByName("SheetName");
-  const emailSource = SpreadsheetApp.openById("SheetID")
-                                    .getSheetByName("Employed Staff")
-                                    .getRange("B2:B")
+  const destinationSheet = ss.getSheetByName(destSheetName);
+  const emailSource = SpreadsheetApp.openById(sourceSheetId)
+                                    .getSheetByName(sourceSheetName)
+                                    .getRange(sourceRange)
                                     .getValues();
-  
-  var newData=[],rows=0;
-  let oldData = destinationSheet.getRange("A4:A").getValues().toString();
-  
-  var sourceData = emailSource
-      .map(function(el){
-        return [el];
-      });
-  for (var i=0;i<sourceData.length;i++){
-    if(oldData.indexOf(sourceData[i])== -1){
-      newData[rows]=sourceData[i];
+
+  let newData = [], rows = 0;
+  let oldData = destinationSheet.getRange(destRange).getValues().toString();
+
+  let sourceData = emailSource.map(function(el) { return [el]; });
+
+  for (let i = 0; i < sourceData.length; i++) {
+    if (oldData.indexOf(sourceData[i]) == -1) {
+      newData[rows] = sourceData[i];
       rows++;
     }
   }
-  
-  if(rows==0){
-    SpreadsheetApp.getActive().toast('No new staff','Status',1);
+
+  if (rows == 0) {
+    SpreadsheetApp.getActive().toast('No new entries found', 'Status', 1);
     Utilities.sleep(1000);
     return;
   }
 
-  // get lastFilledRow in the specified column
-  var column = destinationSheet.getRange('A:A');
-  var value = ''
-  const max = destinationSheet.getMaxRows();
-  var values = column.getValues();
-  values = [].concat.apply([], values);
-  for (row = max - 1; row > 0; row--) {
-    value = values[row];
-    if (value != '') { break }
-  }
-  var lastFilledRow = row + 1;
+  let lastFilledRow = getLastFilledRow(destinationSheet, destRange);
 
-  //Add in the list of new emails, appending them to the end of the previous set
-  var range = destinationSheet.getRange(lastFilledRow+1,1,rows,1);
-  if(newData.length==0){return;}
+  if (newData.length == 0) { return; }
 
+  let range = destinationSheet.getRange(lastFilledRow + 1, 1, rows, 1);
   range.setValues(newData);
 
-  if(rows==1){
-    SpreadsheetApp.getActiveSpreadsheet().toast('1 staff member added', 'Status',1);
-    Utilities.sleep(1000);
-  } else {
-    SpreadsheetApp.getActiveSpreadsheet().toast(rows + ' staff members added', 'Status',1);
-    Utilities.sleep(1000);
+  let message = rows == 1 ? '1 entry added' : rows + ' entries added';
+  SpreadsheetApp.getActiveSpreadsheet().toast(message, 'Status', 1);
+  Utilities.sleep(1000);
+}
+
+/**
+ * Finds the last filled row in a given column range.
+ *
+ * @param {Sheet} sheet The sheet to search in.
+ * @param {string} columnRange A1 notation for the column range.
+ * @return {number} The last filled row number.
+ */
+function getLastFilledRow(sheet, columnRange) {
+  var column = sheet.getRange(columnRange);
+  var values = column.getValues();
+  var row = values.length - 1;
+  while (row >= 0 && values[row][0] == '') {
+    row--;
   }
-  
+  return row + 1;
 }
