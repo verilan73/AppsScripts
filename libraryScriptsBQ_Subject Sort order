@@ -1,0 +1,24 @@
+CREATE TABLE
+  `YOUR TABLE ID` ( name STRING,
+    program_code STRING,
+    num_spaces INT64 );
+INSERT INTO
+  `YOUR TABLE ID` (name,
+    program_code,
+    num_spaces)
+VALUES
+  ('Studies in Language and Literature', 'diploma', 1),
+  ('Language Acquisition', 'diploma', 2),
+  ('Individuals and Societies', 'diploma', 3),
+  ('Sciences', 'diploma', 4),
+  ('Mathematics', 'diploma', 5),
+  ('Arts', 'diploma', 6),
+  ('Core', 'diploma', 7),
+  ('Language and Literature','myp', 1),
+  ('Language Acquisition', 'myp', 2),
+  ('Individuals and Societies','myp', 3),
+  ('Sciences','myp', 4),
+  ('Mathematics','myp', 5),
+  ('Arts','myp', 6),
+  ('Design','myp', 7),
+  ('Physical and Health Education','myp', 8)
