@@ -1,0 +1,30 @@
+  -- If it has not been run for a while, run the query
+  -- "Transcripts - 1 Generate base data"
+  -- first, before running this query
+CREATE OR REPLACE TABLE
+  `TRANSCRIPT DETAILS TABLE ID` AS --TRANSCRIPT DETAILS TABLE
+WITH
+  RankedGrades AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER (PARTITION BY class_id, academic_year ORDER BY CASE WHEN assessment_period = 'Semester 2' THEN 1 ELSE 2 END ) AS rn, COUNT(DISTINCT assessment_period) OVER (PARTITION BY class_id, academic_year ) AS semester_count 
+        FROM `TRANSCRIPT BASE DATA TABLE ID` ) SELECT mb_id, academic_year, assessment_period, class_name, secondary_sorting_key, term_grade, semester_count, CASE
+    WHEN class_name LIKE '%Korean History%' THEN 0.5
+    WHEN class_name LIKE '%Theory of Knowledge%' THEN 0.5
+    WHEN semester_count = 2
+  AND assessment_period = 'Semester 2' THEN 1
+    WHEN semester_count < 2 THEN 0.5
+  ELSE
+  0 -- This case handles if there's a need to exclude unmatched scenarios
+END
+  AS credits
+FROM
+  RankedGrades
+WHERE
+  (assessment_period = 'Semester 2') -- Selects if only one semester exists
+  OR (semester_count = 1
+    AND assessment_period = 'Semester 1') -- Selects only Semester 2 if both semesters exist
+ORDER BY
+  mb_id,
+  academic_year DESC,
+  secondary_sorting_key;
