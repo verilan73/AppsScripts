@@ -1,0 +1,59 @@
+CREATE OR REPLACE TABLE
+  `YOUR TABLE ID` AS --Insert relevant TABLE ID
+SELECT
+  --  tg.student_id,
+    tg.class_id,
+  --  tg.term_id ,
+  s.student_id AS mb_id,
+  --  s.class_grade AS year_group,
+  CONCAT( REGEXP_EXTRACT(ac_year.name, r'(\d{4})'), --Extract the first year
+    ' - ', REGEXP_EXTRACT(ac_year.name, r'(\d{4})$'), --Extracts the second year
+    ' Academic Year' ) AS academic_year,
+  term.name AS assessment_period,
+  -- c.subject_group,
+  CONCAT( REGEXP_REPLACE( REGEXP_REPLACE( REGEXP_REPLACE( REGEXP_REPLACE( REGEXP_REPLACE(c.name, r' \(Grade [0-9]+\)',''), r' ?[A-Z]?[0-9]+[A-Z]* ?', ' '), r' SL/HL','' ), r' SL',''), r' HL','' ), ' ',
+    CASE
+      WHEN m.level = 0 THEN 'SL'
+      WHEN m.level = 1 THEN 'HL'
+    ELSE
+    ''
+  END
+    ) AS class_name,
+  CONCAT(LEFT(CONCAT(REPEAT(CHR(8203),sort_order.num_spaces), c.subject_group), 10), '🔸', LEFT(subject_name, 5)) AS secondary_sorting_key,
+  SAFE_CAST(JSON_EXTRACT_SCALAR(tg.term_grade, '$.grade') AS STRING) AS term_grade,
+FROM
+  `TERM GRADES TABLE ID` tg --TERM GRADES TABLE
+JOIN
+  `STUDENTS TABLE ID` s --STUDENTS TABLE
+ON
+  tg.student_id = s.id
+JOIN
+  `CLASSES TABLE ID` c --CLASSES TABLE
+ON
+  tg.class_id = c.id
+JOIN
+  `MEMBERSHIPS TABLE ID` m --MEMBERSHIPS TABLE
+ON
+  tg.class_id = m.class_id
+  AND tg.student_id = m.user_id
+JOIN
+  `ACADEMIC TERMS TABLE ID` term --ACADEMIC TERMS TABLE
+ON
+  tg.term_id = term.id
+JOIN
+  `ACADEMIC YEARS TABLE ID` ac_year --ACCADEMIC YEARS TABLE
+ON
+  term.academic_year_id = ac_year.id
+JOIN
+  `SUBJECT SORT ORDER TABLE ID` sort_order --SUBJECT SORT ORDER TABLE
+ON
+  c.subject_group = sort_order.name
+  AND c.program_code = sort_order.program_code
+WHERE
+  JSON_EXTRACT_SCALAR(tg.term_grade, '$.grade') IS NOT NULL
+  AND term.name NOT LIKE '%Quarter%'
+
+ORDER BY
+  ac_year.name,
+  tg.term_id,
+  secondary_sorting_key
